@@ -1,12 +1,8 @@
-class User
-  def initialize(name)
-    @score = 0
-    @cards = []
-    @money = 100
-    @name = name
+class User < Gamer
+  def take_card
+    card = @deck.keys.sample
+    @user.cards << card
+    @deck.delete(card)
+    puts @user.cards
   end
-
-  attr_reader :name
-  attr_accessor :cards, :score, :money
-
 end
