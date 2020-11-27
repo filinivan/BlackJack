@@ -13,7 +13,6 @@ class Interface
   def start
     input_name if @user.nil?
     new_game if @deck.empty?
-  
     loop do
       status if @hide_status == false
       input = gets.chomp
@@ -45,7 +44,7 @@ class Interface
       puts "Победил #{@user.name}"
       @user.money += @bank
       @bank = 0
-    elsif @diler.calc_score < 22
+    elsif @diler.calc_score < 22 && (@user.calc_score < @diler.calc_score)
       puts 'Победил дилер'
       @diler.money += @bank
       @bank = 0
@@ -87,7 +86,10 @@ class Interface
   end
 
   def give_cards
-    2.times { take_card(@user, true); take_card(@diler, true) }
+    2.times do
+      take_card(@user)
+      take_card(@diler)
+    end
     pay_to_bank(@user)
     pay_to_bank(@diler)
   end
@@ -102,7 +104,7 @@ class Interface
     @bank += 10
   end
 
-  def take_card(player, no_pay = false)
+  def take_card(player)
     if player.cards.length <= 2
       card = @deck.to_a.sample(1).to_h
       player.cards << card.keys[0].to_s
@@ -121,7 +123,7 @@ class Interface
     end
   end
 
-  def clear 
+  def clear
     @user.cards = []
     @diler.cards = []
     @user.score = 0
@@ -133,6 +135,7 @@ class Interface
     answer = gets.chomp
     if answer == 'y'
       raise 'Закончились деньги' if @user.money.zero? || @diler.money.zero?
+
       @hide_status = false
       clear
       give_cards
