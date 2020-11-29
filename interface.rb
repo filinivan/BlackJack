@@ -1,147 +1,44 @@
-class Interface
-  attr_accessor :deck, :bank
+module Interface
+  module_function
 
-  def initialize
-    @cards_suits = ['+', '<3', '^', '<>']
-    @cards_values = { "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9,
-                      "10": 10, "jack": 10, "queen": 10, "king": 10, "ace": 11 }
-    @deck = {}
-    @bank = 0
-    @hide_status = false
+  def ask_name
+    puts 'Введите имя пользователя: '
+    gets.chomp.capitalize
   end
 
-  def start
-    input_name if @user.nil?
-    new_game if @deck.empty?
-    loop do
-      status if @hide_status == false
-      input = gets.chomp
-      case input
-      when 'open'
-        winner
-      when 'card'
-        card
-      when 'pass'
-        pass
-      else
-        puts 'Неверное значение'
-      end
-    end
+  def status(bank, user, diler)
+    puts "Банк: #{bank}"
+    puts "Пользователь - Очки: #{user.calc_score}, карты: #{user.cards}, баланс: #{user.money}"
+    puts "Дилер - карты: #{diler.hide!}, баланс: #{diler.money}"
   end
 
-  private
-
-  def input_name
-    puts 'Введите ваше имя: '
-    @user = User.new(gets.chomp.capitalize)
-    @diler = Diler.new ''
-  end
-
-  def winner
-    @hide_status = true
-    puts "Карты пользователя: #{@user.cards}. Карты дилера: #{@diler.cards} "
-    if @user.calc_score < 22 && (@user.calc_score > @diler.calc_score)
-      puts "Победил #{@user.name}"
-      @user.money += @bank
-      @bank = 0
-    elsif @diler.calc_score < 22 && (@user.calc_score < @diler.calc_score)
-      puts 'Победил дилер'
-      @diler.money += @bank
-      @bank = 0
-    else
-      puts 'Ничья!'
-    end
-    end_game
-  end
-
-  def card
-    take_card(@user)
-    if @diler.calc_score <= 17
-      take_card(@diler)
-    else
-      puts 'Дилер пропустил ход.'
-    end
-    winner if (@user.cards.length == 3) && (@diler.cards.length == 3)
-  end
-
-  def pass
-    if @diler.calc_score <= 17
-      take_card(@diler)
-    else
-      puts 'Дилер пропустил ход.'
-    end
-  end
-
-  def status
-    puts "Банк: #{@bank}"
-    puts "Пользователь - Очки: #{@user.calc_score}, карты: #{@user.cards}, баланс: #{@user.money}"
-    puts "Дилер - карты: #{@diler.hide!}, баланс: #{@diler.money}"
+  def ask_decision
     puts 'Показать карты - open, Взять карту - card, Пропуск хода - pass:'
+    input = gets.chomp
   end
 
-  def new_game
-    @bank = 0
-    new_deck
-    give_cards
+  def cards(user, diler)
+    puts "Карты пользователя: #{user}. Карты дилера: #{diler} "
   end
 
-  def give_cards
-    2.times do
-      take_card(@user)
-      take_card(@diler)
-    end
-    pay_to_bank(@user)
-    pay_to_bank(@diler)
+  def winner(name = 'ничья')
+    puts "Победитель: #{name}"
   end
 
-  def pay
-    pay_to_bank(@user)
-    pay_to_bank(@diler)
+  def diler_pass
+    puts 'Дилер пропустил ход.' 
   end
 
-  def pay_to_bank(player)
-    player.pay_to_bank
-    @bank += 10
+  def max
+    puts 'Максимальное количество карт'
   end
 
-  def take_card(player)
-    if player.cards.length <= 2
-      card = @deck.to_a.sample(1).to_h
-      player.cards << card.keys[0].to_s
-      player.score += card.values[0]
-      @deck.delete(card.keys[0].to_s)
-    else
-      puts 'Максимальное количество карт'
-    end
-  end
-
-  def new_deck
-    @cards_suits.each do |img|
-      @cards_values.each do |key, value|
-        @deck["#{key}#{img}"] = value
-      end
-    end
-  end
-
-  def clear
-    @user.cards = []
-    @diler.cards = []
-    @user.score = 0
-    @diler.score = 0
-  end
-
-  def end_game
+  def again?
     puts 'Играем ещё? (y/n)'
     answer = gets.chomp
-    if answer == 'y'
-      raise 'Закончились деньги' if @user.money.zero? || @diler.money.zero?
-
-      @hide_status = false
-      clear
-      give_cards
-      start
-    elsif answer == 'n'
-      exit
-    end
   end
+
+  def no_money
+    puts 'Дальнейшая игра невозможна по финансовым причинам)'
+  end 
 end
